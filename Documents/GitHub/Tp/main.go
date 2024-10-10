@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
+	"time"
 )
 
 type Student struct {
@@ -32,20 +33,34 @@ type UserData struct {
 	FirstName     string
 	BirthDate     string
 	Gender        string
+	Age           int
 	ErrorMessage  string
 	IsFormSuccess bool
 }
 
 var (
 	viewCount int
-	userData  UserData
+	class     Class
 	mutex     sync.Mutex
 
 	letterOnlyRegex = regexp.MustCompile("^[a-zA-ZÀ-ÿ\\s-]+$")
 )
 
-func main() {
+func init() {
+	class = Class{
+		Name:         "B1 Informatique",
+		Field:        "Informatique",
+		Level:        "Bachelor 1",
+		StudentCount: 3,
+		StudentsList: []Student{
+			{FirstName: "Jean", LastName: "Dupont", Age: 20, Gender: "Masculin"},
+			{FirstName: "Marie", LastName: "Martin", Age: 19, Gender: "Féminin"},
+			{FirstName: "Pierre", LastName: "Gustav", Age: 21, Gender: "Masculin"},
+		},
+	}
+}
 
+func main() {
 	http.HandleFunc("/promo", promoHandler)
 	http.HandleFunc("/change", changeHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -58,17 +73,8 @@ func main() {
 }
 
 func promoHandler(w http.ResponseWriter, r *http.Request) {
-	class := Class{
-		Name:         "B1 Informatique",
-		Field:        "Informatique",
-		Level:        "Bachelor 1",
-		StudentCount: 3,
-		StudentsList: []Student{
-			{FirstName: "Jean", LastName: "Dupont", Age: 20, Gender: "M"},
-			{FirstName: "Marie", LastName: "Martin", Age: 19, Gender: "F"},
-			{FirstName: "Pierre", LastName: "Gustav", Age: 21, Gender: "M"},
-		},
-	}
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	tmpl, err := template.ParseFiles("promo.html")
 	if err != nil {
@@ -122,17 +128,15 @@ func userFormHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateUserData(data *UserData) bool {
-	
 	if len(data.LastName) < 1 || len(data.LastName) > 32 || !letterOnlyRegex.MatchString(data.LastName) {
 		return false
 	}
-
 
 	if len(data.FirstName) < 1 || len(data.FirstName) > 32 || !letterOnlyRegex.MatchString(data.FirstName) {
 		return false
 	}
 
-	if data.Gender != "masculin" && data.Gender != "féminin" && data.Gender != "autre" {
+	if data.Gender != "Masculin" && data.Gender != "Féminin" && data.Gender != "Autre" {
 		return false
 	}
 
@@ -149,17 +153,29 @@ func userTreatmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mutex.Lock()
-	userData = UserData{
+	userData := &UserData{
 		LastName:  r.FormValue("lastname"),
 		FirstName: r.FormValue("firstname"),
 		BirthDate: r.FormValue("birthdate"),
 		Gender:    r.FormValue("gender"),
 	}
-	mutex.Unlock()
 
-	if validateUserData(&userData) {
+	if validateUserData(userData) {
 		userData.IsFormSuccess = true
+
+		birthDate, _ := time.Parse("2006-01-02", userData.BirthDate)
+		userData.Age = int(time.Since(birthDate).Hours() / 24 / 365)
+
+		mutex.Lock()
+		class.StudentsList = append(class.StudentsList, Student{
+			FirstName: userData.FirstName,
+			LastName:  userData.LastName,
+			Age:       userData.Age,
+			Gender:    userData.Gender,
+		})
+		class.StudentCount++
+		mutex.Unlock()
+
 		http.Redirect(w, r, "/user/display", http.StatusSeeOther)
 	} else {
 		userData.ErrorMessage = "Données invalides. Veuillez vérifier vos informations."
@@ -168,19 +184,23 @@ func userTreatmentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func userDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	data := userData
-	mutex.Unlock()
-
 	tmpl, err := template.ParseFiles("templates/user_display.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if !data.IsFormSuccess {
-		data.ErrorMessage = "Veuillez d'abord renseigner vos informations personnelles."
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	lastStudent := class.StudentsList[len(class.StudentsList)-1]
+	userData := UserData{
+		LastName:      lastStudent.LastName,
+		FirstName:     lastStudent.FirstName,
+		Age:           lastStudent.Age,
+		Gender:        lastStudent.Gender,
+		IsFormSuccess: true,
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.Execute(w, userData)
 }

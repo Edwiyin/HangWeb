@@ -59,14 +59,15 @@
             <td>{{.FirstName}}</td>
             <td>{{.Age}}</td>
             <td>
-                {{if eq .Gender "M"}}
-                    <img src="/static/male-icon.png" alt="Masculin" class="gender-icon">
+                {{if eq .Gender "Masculin"}}
+                    <img src="https://img.icons8.com/color/48/000000/male.png" alt="Masculin" class="gender-icon">
                 {{else}}
-                    <img src="/static/female-icon.png" alt="Féminin" class="gender-icon">
+                    <img src="https://img.icons8.com/color/48/000000/female.png" alt="Féminin" class="gender-icon">
                 {{end}}
             </td>
         </tr>
         {{end}}
     </table>
+    </form>
 </body>
 </html>
