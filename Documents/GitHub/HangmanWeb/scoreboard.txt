@@ -1,2 +1,1 @@
-EDWIN,chenille,6
-Ralph,coq,7
+Edwin,chenille,6edwin,coccinelle,7

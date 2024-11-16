@@ -2,25 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hangman - Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .game-info div {
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .word-display {
+            text-align: center;
+            font-size: 2.5rem;
+            letter-spacing: 0.5rem;
+            margin: 2rem 0;
+            font-family: monospace;
+        }
+
+        .guessed-letters {
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .guessed-letters h3 {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .message.info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .message.warning {
+            background-color: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ffe0b2;
+        }
+
+        form {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+            text-transform: lowercase;
+        }
+
+        button {
+            padding: 0.5rem 2rem;
+            font-size: 1.2rem;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #1976d2;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .guessed-letter {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .image{
+            display: flex;
+            justify-content: center;
+            height: 200px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hangman Game</h1>
+    <div class="game-container">
+        {{if .Message}}
+        <div class="message {{.MessageType}}">
+            {{.Message}}
+        </div>
+        {{end}}
 
-    <p>Player: {{.Username}}</p>
-    <p>Attempts Left: {{.Attempts}}</p>
-
-    <h3>Word: {{.HiddenWord}}</h3>
-
-    <!-- Display message for correct or incorrect guesses -->
-    {{if .Message}}
-    <p style="color: {{if eq .Message "Correct!"}} green {{else}}red{{end}};">{{.Message}}</p>
-    {{end}}
-
-    <form method="POST" action="/game/submit">
-        <label for="guess">Enter a letter:</label>
-        <input autofocus type="text" name="guess" id="guess" maxlength="1" required>
-        <button type="submit">Guess</button>
-    </form>
+        <div class="game-info">
+            <div>
+                Player: {{.Username}}
+            </div>
+            <div>
+                Difficulty: {{.Difficulty}}
+            </div>
+            <div>
+                Tries Remaining: {{.Attempts}}
+            </div>
+        </div>
+        <div class="image">
+            <img src="/static/images/{{.Image}}.png"> 
+        </div>
+        <div class="word-display">
+            {{.HiddenWord}}
+        </div>
+        <div>
+        <form method="POST" action="/game/submit">
+            <label for="guess">Enter a letter:</label>
+            <input autofocus type="text" name="guess" id="guess" maxlength="1" required>
+            <button type="submit">Guess</button>
+        </form>
+      </div>
+    </div>
 </body>
 </html>
