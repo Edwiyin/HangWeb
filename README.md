@@ -50,7 +50,7 @@ Toutes les routes définies dans cette application web distribuent des vues. Cel
 à une vue spécifique qui est générée par le serveur et envoyée au navigateur. Par exemple :
 - La route `/` affiche la page d'accueil.
 - La route `/game` affiche l'interface du jeu.
-- La route `/result` affiche le résultat de la partie.
+- La route `/scoreboard` affiche le résultat de la partie.
 
 Ces vues permettent de structurer clairement les différentes étapes du jeu et d'améliorer l'expérience utilisateur.
 
@@ -60,11 +60,11 @@ Ces vues permettent de structurer clairement les différentes étapes du jeu et 
 1. Ouvrez un terminal et naviguez vers le dossier où vous souhaitez enregistrer le projet.
 2. Exécutez la commande suivante pour cloner le projet :
    ```bash
-   git clone https://github.com/Edwiyin/HangmanWeb.git
+   git clone https://github.com/Edwiyin/HangWeb.git
    ```
 3. Accédez au répertoire du projet :
    ```bash
-   cd HangmanWeb
+   cd HangWeb
    ```
 
 ### 2. Lancer le Serveur
