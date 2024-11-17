@@ -77,6 +77,7 @@
             <div class="score-column">Player</div>
             <div class="score-column">Word</div>
             <div class="score-column">Remaining Attempts</div>
+            <div class="score-column">Difficulty</div>
         </div>
 
         {{range .Scores}}
@@ -84,6 +85,7 @@
             <div class="score-column">{{.Username}}</div>
             <div class="score-column">{{.Word}}</div>
             <div class="score-column">{{.Attempts}}</div>
+            <div class="score-column">{{.Difficulty}}</div>
         </div>
         {{end}}
 

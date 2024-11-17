@@ -1,5 +1,2 @@
-Edwin,chenille,6
-edwin,coccinelle,7
-ss,plume,7
-edwin,feuille,10
-ss,requin,10
+Edwin,Brouillard,8,Easy
+Michel,Responsabilite,3,Hard

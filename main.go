@@ -149,7 +149,8 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			word, _ := getCookie(r, "word")
 			username, _ := getCookie(r, "username")
 			attemptsStr, _ := getCookie(r, "attempts")
-			score_board_entry := username + "," + word + "," + attemptsStr
+			difficulty, _ := getCookie(r, "difficulty")
+			score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
 			f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 			check(err)
 			f.WriteString(score_board_entry + "\n")
@@ -177,7 +178,8 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				word, _ := getCookie(r, "word")
 				username, _ := getCookie(r, "username")
 				attemptsStr, _ := getCookie(r, "attempts")
-				score_board_entry := username + "," + word + "," + attemptsStr
+				difficulty, _ := getCookie(r, "difficulty")
+				score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
 				f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 				check(err)
 				f.WriteString(score_board_entry + "\n")
@@ -214,9 +216,10 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Score struct {
-	Username string
-	Word     string
-	Attempts string
+	Username   string
+	Word       string
+	Attempts   string
+	Difficulty string
 }
 
 func scoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -234,11 +237,12 @@ func scoreHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		parts := strings.Split(line, ",")
-		if len(parts) == 3 {
+		if len(parts) == 4 {
 			scores = append(scores, Score{
-				Username: parts[0],
-				Word:     parts[1],
-				Attempts: parts[2],
+				Username:   parts[0],
+				Word:       parts[1],
+				Attempts:   parts[2],
+				Difficulty: parts[3],
 			})
 		}
 	}
