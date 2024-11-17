@@ -1,19 +1,3 @@
-Conversation opened. 1 read message.
-
-Skip to content
-Using Gmail with screen readers
-1 of 308
-(no subject)
-Inbox
-
-Michel Mustafov
-Attachments
-2:01 PM (0 minutes ago)
-to me
-
-
- One attachment
-  •  Scanned by Gmail
 # Guide de Configuration de HangmanWeb
 
 Veuillez suivre ces étapes pour jouer au jeu. 
