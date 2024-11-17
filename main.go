@@ -135,38 +135,70 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	attemptsStr, _ := getCookie(r, "attempts")
 	attempts, _ := strconv.Atoi(attemptsStr)
 	difficulty, _ := getCookie(r, "difficulty")
-
+	image := ""
 	guess := r.FormValue("guess")
 	message := ""
 	messageType := ""
+	if len(guess) > 1 {
+		if guess == word {
+			messageType = "success"
+			hiddenWord = word
+			attempts = 0
+			image = "won"
+			message = "Congratulations, you won!"
+			word, _ := getCookie(r, "word")
+			username, _ := getCookie(r, "username")
+			attemptsStr, _ := getCookie(r, "attempts")
+			score_board_entry := username + "," + word + "," + attemptsStr
+			f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+			check(err)
+			f.WriteString(score_board_entry + "\n")
+			attempts = 0
+		} else {
+			attempts -= 2
+			message = "Incorrect!"
+			messageType = "error"
+			image = strconv.Itoa(10 - attempts)
+		}
 
-	if strings.Contains(word, guess) {
-		message = "Correct!"
-		messageType = "success"
-		for i, letter := range word {
-			if string(letter) == guess {
-				hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
+	} else {
+		if strings.Contains(word, guess) {
+			message = "Correct!"
+			messageType = "success"
+			for i, letter := range word {
+				if string(letter) == guess {
+					hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
+				}
+			}
+			if strings.Replace(hiddenWord, " ", "", -1) == word {
+				messageType = "success"
+				image = "won"
+				message = "Congratulations, you won!"
+				word, _ := getCookie(r, "word")
+				username, _ := getCookie(r, "username")
+				attemptsStr, _ := getCookie(r, "attempts")
+				score_board_entry := username + "," + word + "," + attemptsStr
+				f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+				check(err)
+				f.WriteString(score_board_entry + "\n")
+				attempts = 0
+			}
+		} else {
+			attempts--
+			if attempts == 0 {
+				message = "You Lost! The word was: " + word
+				messageType = "error"
+				image = strconv.Itoa(10 - attempts)
+			} else {
+				message = "Incorrect!"
+				messageType = "error"
+				image = strconv.Itoa(10 - attempts)
 			}
 		}
-	} else {
-		attempts--
-		message = "Incorrect!"
-		messageType = "error"
 	}
 
 	setCookie(w, "hiddenWord", hiddenWord)
 	setCookie(w, "attempts", strconv.Itoa(attempts))
-
-	if !strings.Contains(hiddenWord, "_") {
-		http.Redirect(w, r, "/end?result=win", http.StatusSeeOther)
-		return
-	}
-	if attempts < 0 {
-		http.Redirect(w, r, "/end?result=lose", http.StatusSeeOther)
-		return
-	}
-
-	image := 10 - attempts
 
 	data := map[string]interface{}{
 		"Username":    username,
@@ -218,42 +250,11 @@ func scoreHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	templates.ExecuteTemplate(w, "scores.html", data)
 }
-func endHandler(w http.ResponseWriter, r *http.Request) {
-	result := r.URL.Query().Get("result")
-	message := ""
-	if result == "win" {
-		message = "Congratulations, you won!"
-		word, _ := getCookie(r, "word")
-		username, _ := getCookie(r, "username")
-		attempts, _ := getCookie(r, "attempts")
-		score_board_entry := username + "," + word + "," + attempts
-		f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-		check(err)
-		f.WriteString(score_board_entry + "\n")
-	} else {
-		word, _ := getCookie(r, "word")
-		message = "Sorry, you lost! The word was: " + word
-	}
-
-	http.SetCookie(w, &http.Cookie{Name: "username", Value: "", Path: "/", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "difficulty", Value: "", Path: "/", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "word", Value: "", Path: "/", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "hiddenWord", Value: "", Path: "/", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "attempts", Value: "", Path: "/", MaxAge: -1})
-
-	data := map[string]interface{}{
-		"Message": message,
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	templates.ExecuteTemplate(w, "end.html", data)
-}
 
 func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/game", gameHandler)
 	http.HandleFunc("/game/submit", submitHandler)
-	http.HandleFunc("/end", endHandler)
 	http.HandleFunc("/scoreboard", scoreHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	fmt.Println("Starting server on http://localhost:8080...")

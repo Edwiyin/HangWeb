@@ -133,6 +133,30 @@
             cursor: not-allowed;
         }
 
+        .button {
+            padding: 0.5rem 2rem;
+            font-size: 1.2rem;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-block;
+            margin: auto;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #1976d2;
+        }
+
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
         .guessed-letter {
             display: inline-block;
             padding: 0.5rem 1rem;
@@ -175,12 +199,18 @@
             {{.HiddenWord}}
         </div>
         <div>
-        <form method="POST" action="/game/submit">
-            <label for="guess">Enter a letter:</label>
-            <input autofocus type="text" name="guess" id="guess" maxlength="1" required>
-            <button type="submit">Guess</button>
-        </form>
-      </div>
+            {{if gt .Attempts 0}}
+                <form method="POST" action="/game/submit">
+                    <label for="guess">Enter a letter:</label>
+                    <input autofocus type="text" name="guess" id="guess" required>
+                    <button type="submit">Guess</button>
+                </form>
+            {{else}}
+                <div style="text-align: center;">
+                    <a href="/" class="button">Play Again</a>
+                </div>
+            {{end}}
+        </div>
     </div>
 </body>
 </html>

@@ -131,6 +131,31 @@
             box-shadow: 0 2px 8px rgba(102,126,234,0.4);
         }
 
+        .button {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #1976d2;
+        }
+
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+
         .rules {
             margin-top: 2rem;
             padding: 1rem;
@@ -202,6 +227,7 @@
             </div>
 
             <button type="submit">Start Game</button>
+            <a href="/scoreboard" class="button">View High Scores</a>
         </form>
 
         <div class="rules">
@@ -210,7 +236,6 @@
                 <li><strong>Easy:</strong> 10 tries, 2 letters revealed</li>
                 <li><strong>Medium:</strong> 7 tries, 1 letter revealed</li>
                 <li><strong>Hard:</strong> 5 tries, no letters revealed</li>
-                <li>Guess one letter at a time</li>
                 <li>Each wrong guess brings the hanging man closer to his fate!</li>
             </ul>
         </div>
