@@ -1,0 +1,233 @@
+<!DOCTYPE html
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .game-description {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .difficulty-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .difficulty-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn[data-difficulty="easy"] {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .difficulty-btn[data-difficulty="medium"] {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .difficulty-btn[data-difficulty="hard"] {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-btn.selected {
+            border: 2px solid currentColor;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="hidden"] {
+            display: none;
+        }
+
+        button[type="submit"] {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        button[type="submit"]:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(102,126,234,0.4);
+        }
+
+        .rules {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .rules h2 {
+            color: #2d3748;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rules ul {
+            color: #4a5568;
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .rules li {
+            margin-bottom: 0.5rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Hangman Game</h1>
+        
+        <p class="game-description">
+            Welcome to the classic word-guessing game! Test your vocabulary and try to save the hanging man by guessing the hidden word.
+        </p>
+
+        <form action="/" method="POST">
+            <div class="input-group">
+                <label for="username">Your Name:</label>
+                <input type="text" 
+                       id="username" 
+                       name="username" 
+                       required 
+                       placeholder="Enter your name"
+                       minlength="2"
+                       maxlength="20">
+            </div>
+
+            <div class="input-group">
+                <label>Select Difficulty:</label>
+                <div class="difficulty-container">
+                    <button type="button" 
+                            class="difficulty-btn selected" 
+                            data-difficulty="easy"
+                            onclick="selectDifficulty(this)">
+                        Easy
+                    </button>
+                    <button type="button" 
+                            class="difficulty-btn" 
+                            data-difficulty="medium"
+                            onclick="selectDifficulty(this)">
+                        Medium
+                    </button>
+                    <button type="button" 
+                            class="difficulty-btn" 
+                            data-difficulty="hard"
+                            onclick="selectDifficulty(this)">
+                        Hard
+                    </button>
+                </div>
+                <input type="hidden" id="difficulty" name="difficulty" value="easy">
+            </div>
+
+            <button type="submit">Start Game</button>
+        </form>
+
+        <div class="rules">
+            <h2>Game Rules:</h2>
+            <ul>
+                <li><strong>Easy:</strong> 10 tries, 2 letters revealed</li>
+                <li><strong>Medium:</strong> 7 tries, 1 letter revealed</li>
+                <li><strong>Hard:</strong> 5 tries, no letters revealed</li>
+                <li>Guess one letter at a time</li>
+                <li>Each wrong guess brings the hanging man closer to his fate!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function selectDifficulty(button) {
+           
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+         
+            button.classList.add('selected');
+        
+            document.getElementById('difficulty').value = button.dataset.difficulty;
+        }
+    </script>
+</body>
+</html>
