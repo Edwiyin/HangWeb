@@ -166,6 +166,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(word, guess) {
 			message = "Correct!"
 			messageType = "success"
+			image = strconv.Itoa(10 - attempts)
 			for i, letter := range word {
 				if string(letter) == guess {
 					hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
