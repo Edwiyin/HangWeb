@@ -1,2 +1,2 @@
-Edwin,savon,9,easy,4500
-Michel,roncier,4,easy,2000
+Michel,puce,8,easy,4500
+Edwin,sagesse,2,hard,7500

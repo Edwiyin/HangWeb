@@ -186,9 +186,9 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch difficulty {
 	case "medium":
-		difficultyMultiplier = 2
-	case "hard":
 		difficultyMultiplier = 3
+	case "hard":
+		difficultyMultiplier = 5
 	}
 
 	if strings.Contains(usedLetters, guess) {
@@ -197,7 +197,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			messageType = "success"
 			image = strconv.Itoa(10 - attempts)
 
-			score = 50 * letterCount * difficultyMultiplier * attempts
+			score = max(50*((letterCount*difficultyMultiplier)+(attempts*difficultyMultiplier)), 10)
 
 			for i, letter := range word {
 				if string(letter) == guess &&
@@ -209,7 +209,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			if strings.Replace(hiddenWord, " ", "", -1) == word {
 				messageType = "success"
 				message = "Congratulations, you won!"
-				score = 500 * difficultyMultiplier * attempts
+				score = max(500*difficultyMultiplier*(attempts+1), 100)
 
 				score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
 					username, word, attemptsStr, difficulty, score)
@@ -220,11 +220,11 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			if revealedCount > 1 {
-				message = "Toutes les occurrences de cette lettre ont été révélées !"
+				message = "All occurrences of this letter have already been revealed!"
 				messageType = "warning"
 				image = strconv.Itoa(10 - attempts)
 			} else {
-				message = "Vous avez déjà utilisé cette lettre !"
+				message = "You have already used this letter!"
 				messageType = "warning"
 				image = strconv.Itoa(10 - attempts)
 			}
@@ -239,7 +239,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				hiddenWord = word
 				image = "won"
 				attempts = 0
-				score = 500 * difficultyMultiplier * attempts
+				score = max(500*difficultyMultiplier*(attempts+1), 100)
 				message = "Congratulations, you won!"
 
 				score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
@@ -258,7 +258,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				message = "Correct!"
 				messageType = "success"
 				image = strconv.Itoa(10 - attempts)
-				score = 50 * letterCount * difficultyMultiplier * attempts
+				score = max(50*letterCount*difficultyMultiplier*(attempts+1), 10)
 
 				for i, letter := range word {
 					if string(letter) == guess {
@@ -269,7 +269,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 					messageType = "success"
 					message = "Congratulations, you won!"
 					image = "won"
-					score = 500 * difficultyMultiplier * attempts
+					score = max(500*difficultyMultiplier*(attempts+1), 100)
 
 					score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
 						username, word, attemptsStr, difficulty, score)
@@ -309,6 +309,13 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html")
 	templates.ExecuteTemplate(w, "game.html", data)
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 type Score struct {
