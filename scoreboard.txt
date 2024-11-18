@@ -1,2 +1,2 @@
-Edwin,Brouillard,8,Easy
-Michel,Responsabilite,3,Hard
+Edwin,brouillard,8,easy
+Michel,responsabilite,3,hard
