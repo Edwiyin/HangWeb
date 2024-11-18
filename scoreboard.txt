@@ -1,2 +1,2 @@
-Edwin,brouillard,8,easy
-Michel,corbeau,9,easy
+Edwin,savon,9,easy,4500
+Michel,roncier,4,easy,2000

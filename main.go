@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -177,18 +178,26 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	guess := r.FormValue("guess")
 	message := ""
 	messageType := ""
+	score := 0
 
 	letterCount := strings.Count(word, guess)
-
 	revealedCount := strings.Count(hiddenWord, guess)
+	difficultyMultiplier := 1
+
+	switch difficulty {
+	case "medium":
+		difficultyMultiplier = 2
+	case "hard":
+		difficultyMultiplier = 3
+	}
 
 	if strings.Contains(usedLetters, guess) {
-
 		if letterCount > revealedCount {
-
 			message = "Correct!"
 			messageType = "success"
 			image = strconv.Itoa(10 - attempts)
+
+			score = 50 * letterCount * difficultyMultiplier * attempts
 
 			for i, letter := range word {
 				if string(letter) == guess &&
@@ -200,7 +209,10 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			if strings.Replace(hiddenWord, " ", "", -1) == word {
 				messageType = "success"
 				message = "Congratulations, you won!"
-				score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
+				score = 500 * difficultyMultiplier * attempts
+
+				score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
+					username, word, attemptsStr, difficulty, score)
 				f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 				check(err)
 				f.WriteString(score_board_entry + "\n")
@@ -217,7 +229,6 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				image = strconv.Itoa(10 - attempts)
 			}
 		}
-
 	} else {
 		usedLetters += guess
 		setCookie(w, "usedLetters", usedLetters)
@@ -228,8 +239,11 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				hiddenWord = word
 				image = "won"
 				attempts = 0
+				score = 500 * difficultyMultiplier * attempts
 				message = "Congratulations, you won!"
-				score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
+
+				score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
+					username, word, attemptsStr, difficulty, score)
 				f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 				check(err)
 				f.WriteString(score_board_entry + "\n")
@@ -244,6 +258,8 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				message = "Correct!"
 				messageType = "success"
 				image = strconv.Itoa(10 - attempts)
+				score = 50 * letterCount * difficultyMultiplier * attempts
+
 				for i, letter := range word {
 					if string(letter) == guess {
 						hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
@@ -253,7 +269,10 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 					messageType = "success"
 					message = "Congratulations, you won!"
 					image = "won"
-					score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
+					score = 500 * difficultyMultiplier * attempts
+
+					score_board_entry := fmt.Sprintf("%s,%s,%s,%s,%d",
+						username, word, attemptsStr, difficulty, score)
 					f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 					check(err)
 					f.WriteString(score_board_entry + "\n")
@@ -286,6 +305,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		"Difficulty":  difficulty,
 		"UsedLetters": strings.Join(strings.Split(usedLetters, ""), ", "),
 		"Image":       image,
+		"Score":       score,
 	}
 	w.Header().Set("Content-Type", "text/html")
 	templates.ExecuteTemplate(w, "game.html", data)
@@ -296,6 +316,7 @@ type Score struct {
 	Word       string
 	Attempts   string
 	Difficulty string
+	Score      int
 }
 
 func scoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -313,15 +334,21 @@ func scoreHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		parts := strings.Split(line, ",")
-		if len(parts) == 4 {
+		if len(parts) == 5 {
+			score, _ := strconv.Atoi(parts[4])
 			scores = append(scores, Score{
 				Username:   parts[0],
 				Word:       parts[1],
 				Attempts:   parts[2],
 				Difficulty: parts[3],
+				Score:      score,
 			})
 		}
 	}
+
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
 
 	data := map[string]interface{}{
 		"Scores": scores,
