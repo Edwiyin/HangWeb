@@ -369,7 +369,7 @@ func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/game", gameHandler)
 	http.HandleFunc("/game/submit", submitHandler)
-	http.HandleFunc("/scoreboard", scoreHandler)
+	http.HandleFunc("/scores", scoreHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	fmt.Println("Starting server on http://localhost:8080...")
 	http.ListenAndServe(":8080", nil)
