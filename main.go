@@ -96,6 +96,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		setCookie(w, "word", word)
 		setCookie(w, "hiddenWord", hiddenWord)
 		setCookie(w, "attempts", attempts)
+		setCookie(w, "usedLetters", "")
 
 		http.Redirect(w, r, "/game", http.StatusSeeOther)
 		return
@@ -113,14 +114,16 @@ func gameHandler(w http.ResponseWriter, r *http.Request) {
 	attemptsStr, _ := getCookie(r, "attempts")
 	attempts, _ := strconv.Atoi(attemptsStr)
 	difficulty, _ := getCookie(r, "difficulty")
+	usedLetters, _ := getCookie(r, "usedLetters")
 
 	data := map[string]interface{}{
-		"Username":   username,
-		"Word":       word,
-		"HiddenWord": hiddenWord,
-		"Attempts":   attempts,
-		"Difficulty": difficulty,
-		"Image":      10 - attempts,
+		"Username":    username,
+		"Word":        word,
+		"HiddenWord":  hiddenWord,
+		"Attempts":    attempts,
+		"Difficulty":  difficulty,
+		"Image":       10 - attempts,
+		"UsedLetters": strings.Join(strings.Split(usedLetters, ""), ", "),
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -135,45 +138,23 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	attemptsStr, _ := getCookie(r, "attempts")
 	attempts, _ := strconv.Atoi(attemptsStr)
 	difficulty, _ := getCookie(r, "difficulty")
+	usedLetters, _ := getCookie(r, "usedLetters")
 	image := ""
 	guess := r.FormValue("guess")
 	message := ""
 	messageType := ""
-	if len(guess) > 1 {
-		if guess == word {
-			messageType = "success"
-			hiddenWord = word
-			attempts = 0
-			image = "won"
-			message = "Congratulations, you won!"
-			word, _ := getCookie(r, "word")
-			username, _ := getCookie(r, "username")
-			attemptsStr, _ := getCookie(r, "attempts")
-			difficulty, _ := getCookie(r, "difficulty")
-			score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
-			f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-			check(err)
-			f.WriteString(score_board_entry + "\n")
-			attempts = 0
-		} else {
-			attempts -= 2
-			message = "Incorrect!"
-			messageType = "error"
-			image = strconv.Itoa(10 - attempts)
-		}
-
+	if strings.Contains(usedLetters, guess) {
+		message = "La lettre '" + guess + "' a déjà été utilisée!"
+		messageType = "warning"
+		image = strconv.Itoa(10 - attempts)
 	} else {
-		if strings.Contains(word, guess) {
-			message = "Correct!"
-			messageType = "success"
-			image = strconv.Itoa(10 - attempts)
-			for i, letter := range word {
-				if string(letter) == guess {
-					hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
-				}
-			}
-			if strings.Replace(hiddenWord, " ", "", -1) == word {
+		usedLetters += guess
+		setCookie(w, "usedLetters", usedLetters)
+		if len(guess) > 1 {
+			if guess == word {
 				messageType = "success"
+				hiddenWord = word
+				attempts = 0
 				image = "won"
 				message = "Congratulations, you won!"
 				word, _ := getCookie(r, "word")
@@ -185,17 +166,47 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				check(err)
 				f.WriteString(score_board_entry + "\n")
 				attempts = 0
-			}
-		} else {
-			attempts--
-			if attempts == 0 {
-				message = "You Lost! The word was: " + word
-				messageType = "error"
-				image = strconv.Itoa(10 - attempts)
 			} else {
+				attempts -= 2
 				message = "Incorrect!"
 				messageType = "error"
 				image = strconv.Itoa(10 - attempts)
+			}
+
+		} else {
+			if strings.Contains(word, guess) {
+				message = "Correct!"
+				messageType = "success"
+				image = strconv.Itoa(10 - attempts)
+				for i, letter := range word {
+					if string(letter) == guess {
+						hiddenWord = hiddenWord[:i*2] + guess + hiddenWord[i*2+1:]
+					}
+				}
+				if strings.Replace(hiddenWord, " ", "", -1) == word {
+					messageType = "success"
+					message = "Congratulations, you won!"
+					word, _ := getCookie(r, "word")
+					username, _ := getCookie(r, "username")
+					attemptsStr, _ := getCookie(r, "attempts")
+					difficulty, _ := getCookie(r, "difficulty")
+					score_board_entry := username + "," + word + "," + attemptsStr + "," + difficulty
+					f, err := os.OpenFile("./scoreboard.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+					check(err)
+					f.WriteString(score_board_entry + "\n")
+					attempts = 0
+				}
+			} else {
+				attempts--
+				if attempts == 0 {
+					message = "You Lost! The word was: " + word
+					messageType = "error"
+					image = strconv.Itoa(10 - attempts)
+				} else {
+					message = "Incorrect!"
+					messageType = "error"
+					image = strconv.Itoa(10 - attempts)
+				}
 			}
 		}
 	}
@@ -210,6 +221,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		"Message":     message,
 		"MessageType": messageType,
 		"Difficulty":  difficulty,
+		"UsedLetters": strings.Join(strings.Split(usedLetters, ""), ", "),
 		"Image":       image,
 	}
 	w.Header().Set("Content-Type", "text/html")

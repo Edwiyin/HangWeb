@@ -147,7 +147,9 @@
         }
 
         .button:hover {
-            background-color: #1976d2;
+            background: #5a67d8;
+            transform: translateY(-5px);
+            box-shadow: 0 2px 8px rgba(102,126,234,0.4);
         }
 
         .button:disabled {
@@ -236,7 +238,8 @@
                 <li><strong>Easy:</strong> 10 tries, 2 letters revealed</li>
                 <li><strong>Medium:</strong> 7 tries, 1 letter revealed</li>
                 <li><strong>Hard:</strong> 5 tries, no letters revealed</li>
-                <li>Each wrong guess brings the hanging man closer to his fate!</li>
+                <li>Each incorrect guess reduces the remaining attempts by 1 </li>
+                <li>Guessing an incorrect word will reduces the remaining attempts by 2</li>
             </ul>
         </div>
     </div>
